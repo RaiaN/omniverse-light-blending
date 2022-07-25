@@ -1,6 +1,5 @@
 import omni.ext
-import omni.ui as ui
-# import omni.timeline as tl
+from .tickable_system import TickableSystem
 
 # Any class derived from `omni.ext.IExt` in top level module (defined in `python.modules` of `extension.toml`) will be
 # instantiated when extension gets enabled and `on_startup(ext_id)` will be called. Later when extension gets disabled
@@ -13,15 +12,9 @@ class MyExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
         print("[petrl.tools.lightblending] MyExtension startup")
 
-        self._window = ui.Window("My Window", width=300, height=300)
-        with self._window.frame:
-            with ui.VStack():
-                ui.Label("Some Label")
-
-                def on_click():
-                    print("clicked!")
-
-                ui.Button("Click Me", clicked_fn=lambda: on_click())
+        self.tickable_system = TickableSystem()
+        self.tickable_system.startup()
 
     def on_shutdown(self):
         print("[petrl.tools.lightblending] MyExtension shutdown")
+        self.tickable_system = None
