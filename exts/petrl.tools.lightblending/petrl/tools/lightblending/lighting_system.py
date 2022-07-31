@@ -52,7 +52,7 @@ class LightingSystem():
 
     def remove_light(self, light):
         # todo
-        print(light)
+        #print(light)
         pass
 
     def _on_update(self, args):
@@ -71,13 +71,13 @@ class LightingSystem():
                 distance = (camera_position - position).GetLength()
 
                 light_weight = float(distance / (light_model.get_radius() + 0.0001))
-                print("Light weight: ", light_weight)
+                # print("Light weight: ", light_weight)
 
                 new_intensity = 1.0 - min(1.0, light_weight)
-                print(new_intensity)
+                # print(new_intensity)
                 new_intensity = new_intensity * light_model.get_default_intensity()
-                print(new_intensity)
-                print("New intensity: ", new_intensity)
+                # print(new_intensity)
+                # print("New intensity: ", new_intensity)
 
                 light_model.set_intensity(new_intensity)
         except Exception as exc:
@@ -88,7 +88,7 @@ class LightingSystem():
     @staticmethod
     def get_instance():
         if LightingSystem.instance is None:
-            print("creating new lighting system")
+            # print("creating new lighting system")
             LightingSystem.instance = LightingSystem()
 
         return LightingSystem.instance
