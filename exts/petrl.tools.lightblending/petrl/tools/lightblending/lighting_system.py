@@ -55,7 +55,9 @@ class LightingSystem():
         print(light)
         pass
 
-    def _on_update(self, _):
+    def _on_update(self, args):
+        print(args)
+
         camera_position = Gf.Vec3f(CameraUtils.GetCameraPosition())
         # print("Active camera position: ", camera_position)
 
@@ -69,7 +71,7 @@ class LightingSystem():
                 distance = (camera_position - position).GetLength()
 
                 light_weight = float(distance / (light_model.get_radius() + 0.0001))
-                print("Light weigh: ", light_weight)
+                print("Light weight: ", light_weight)
 
                 new_intensity = 1.0 - min(1.0, light_weight)
                 print(new_intensity)

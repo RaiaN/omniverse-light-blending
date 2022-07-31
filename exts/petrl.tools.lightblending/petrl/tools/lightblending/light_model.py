@@ -60,7 +60,7 @@ class LightModel:
         """Called by Tf.Notice. When USD data changes, we update light model"""
 
         # changed_items = set()
-        for p in notice.GetChangedInfoOnlyPaths():
+        '''for p in notice.GetChangedInfoOnlyPaths():
             prim_path = p.GetPrimPath().pathString
 
             if prim_path != self._light_path:
@@ -72,11 +72,11 @@ class LightModel:
 
                 print("Light intensity changed for object: ", usd_light)
 
-                self._intensity = UsdLux.Light.GetIntensityAttr(usd_light).Get()
+                self._intensity = usd_light.GetIntensityAttr().Get()
 
                 print("Light intensity changed to: ", self._intensity)
 
-            # todo: listen for 'radius' changes
+            # todo: listen for 'radius' changes'''
 
         # for item in changed_items:
         #     self._item_changed(item)
