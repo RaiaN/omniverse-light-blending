@@ -1,5 +1,6 @@
 import omni.kit.app
-from pxr import UsdLux
+from pxr import UsdLux, UsdGeom
+from pxr.Usd import TimeCode
 
 from .light_model import LightModel
 from .camera_utils import CameraUtils
@@ -27,6 +28,10 @@ class LightingSystem():
                 print("Cleaning up light model: ", model)
                 model.cleanup_listeners()
 
+        if hasattr(self, "_update_end_sub") and self._update_end_sub is not None:
+            print("Unsubscribe from update event stream")
+            self._update_end_sub.unsubscribe()
+
         self.tracked_lights = []
         self.light_models = []
 
@@ -51,13 +56,17 @@ class LightingSystem():
         pass
 
     def _on_update(self, _):
-        # only do light blending with # lights > 1
-        # if len(self.tracked_lights) <= 1:
-        #     return
+        camera_position = CameraUtils.GetCameraPosition()
+        # print("Active camera position: ", camera_position)
 
-        print("Active camera position: ", CameraUtils.GetCameraPosition())
+        for light in self.tracked_lights:
+            light_prim = UsdGeom.Imageable(light)
+            _, _, _, position = light_prim.ComputeLocalToWorldTransform(TimeCode())
+            position = position[:3]
+            print("Light position: ", light, position)
+
         # todo: calculate distance between lights
-        # todo: gradually reduce intensity when camera is moving outside of the light radius and vice versa
+        # todo: gradually reduce intensity to 0.0 when camera is moving outside of the light radius and vice versa
 
     @staticmethod
     def get_instance():
