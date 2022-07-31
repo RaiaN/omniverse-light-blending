@@ -12,8 +12,14 @@ class LightModel:
         self._light_path = usd_light.GetPrim().GetPath().pathString
         print("Light path: ", self._light_path)
 
-        self._intensity = UsdLux.Light.GetIntensityAttr(usd_light).Get()
-        print("Light intensity: ", self._intensity)
+        self._intensity = usd_light.GetIntensityAttr().Get()
+        self._default_intensity = self._intensity
+        print("Light intensity (current): ", self._intensity)
+        print("Light intensity (default): ", self._default_intensity)
+
+        sphere_light = UsdLux.SphereLight(usd_light)
+        self._radius = sphere_light.GetRadiusAttr().Get(Usd.TimeCode())
+        print("Light radius: ", self._radius)
 
         # Add a Tf.Notice listener to update the light attributes
         stage = self._usd_context.get_stage()
@@ -33,8 +39,22 @@ class LightModel:
         # Get the UsdContext we are attached to
         return omni.usd.get_context()
 
+    def get_default_intensity(self):
+        return self._default_intensity
+
     def get_intensity(self):
         return self._intensity
+
+    def get_radius(self):
+        return self._radius
+
+    def set_intensity(self, new_intensity):
+        stage = self._usd_context.get_stage()
+        prim = stage.GetPrimAtPath(self._light_path)
+        usd_light = UsdLux.Light(prim)
+
+        usd_light.GetIntensityAttr().Set(new_intensity, Usd.TimeCode())
+        self._intensity = new_intensity
 
     def _notice_changed(self, notice, stage):
         """Called by Tf.Notice. When USD data changes, we update light model"""
@@ -55,6 +75,8 @@ class LightModel:
                 self._intensity = UsdLux.Light.GetIntensityAttr(usd_light).Get()
 
                 print("Light intensity changed to: ", self._intensity)
+
+            # todo: listen for 'radius' changes
 
         # for item in changed_items:
         #     self._item_changed(item)

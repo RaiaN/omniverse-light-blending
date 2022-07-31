@@ -1,5 +1,5 @@
 import omni.kit.app
-from pxr import UsdLux, UsdGeom
+from pxr import UsdLux, UsdGeom, Gf
 from pxr.Usd import TimeCode
 
 from .light_model import LightModel
@@ -56,16 +56,31 @@ class LightingSystem():
         pass
 
     def _on_update(self, _):
-        camera_position = CameraUtils.GetCameraPosition()
+        camera_position = Gf.Vec3f(CameraUtils.GetCameraPosition())
         # print("Active camera position: ", camera_position)
 
-        for light in self.tracked_lights:
-            light_prim = UsdGeom.Imageable(light)
-            _, _, _, position = light_prim.ComputeLocalToWorldTransform(TimeCode())
-            position = position[:3]
-            print("Light position: ", light, position)
+        try:
+            for light, light_model in zip(self.tracked_lights, self.light_models):
+                light_prim = UsdGeom.Imageable(light)
+                _, _, _, position = light_prim.ComputeLocalToWorldTransform(TimeCode())
+                position = position[:3]
+                position = Gf.Vec3f(position)
 
-        # todo: calculate distance between lights
+                distance = (camera_position - position).GetLength()
+
+                light_weight = float(distance / (light_model.get_radius() + 0.0001))
+                print("Light weigh: ", light_weight)
+
+                new_intensity = 1.0 - min(1.0, light_weight)
+                print(new_intensity)
+                new_intensity = new_intensity * light_model.get_default_intensity()
+                print(new_intensity)
+                print("New intensity: ", new_intensity)
+
+                light_model.set_intensity(new_intensity)
+        except Exception as exc:
+            print("Exception: ", exc)
+
         # todo: gradually reduce intensity to 0.0 when camera is moving outside of the light radius and vice versa
 
     @staticmethod
