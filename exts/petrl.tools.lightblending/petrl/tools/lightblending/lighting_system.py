@@ -52,7 +52,7 @@ class LightingSystem():
 
     def remove_light(self, light):
         # todo
-        #print(light)
+        # print(light)
         pass
 
     def _on_update(self, args):
