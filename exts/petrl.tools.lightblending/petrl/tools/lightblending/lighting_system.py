@@ -2,6 +2,7 @@ import omni.kit.app
 from pxr import UsdLux
 
 from .light_model import LightModel
+from .camera_utils import CameraUtils
 
 __all__ = ["LightingSystem"]
 
@@ -51,10 +52,12 @@ class LightingSystem():
 
     def _on_update(self, _):
         # only do light blending with # lights > 1
-        if len(self.tracked_lights) <= 1:
-            return
+        # if len(self.tracked_lights) <= 1:
+        #     return
 
-        # calculate distance between lights
+        print("Active camera position: ", CameraUtils.GetCameraPosition())
+        # todo: calculate distance between lights
+        # todo: gradually reduce intensity when camera is moving outside of the light radius and vice versa
 
     @staticmethod
     def get_instance():
