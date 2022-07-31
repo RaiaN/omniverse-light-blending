@@ -56,7 +56,7 @@ class LightingSystem():
         pass
 
     def _on_update(self, args):
-        print(args)
+        # print(args)
 
         camera_position = Gf.Vec3f(CameraUtils.GetCameraPosition())
         # print("Active camera position: ", camera_position)
