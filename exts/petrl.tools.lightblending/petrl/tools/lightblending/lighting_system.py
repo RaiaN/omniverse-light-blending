@@ -16,7 +16,7 @@ class LightingSystem():
 
         self._update_end_sub = app.get_update_event_stream().create_subscription_to_pop(
             self._on_update,
-            name="LightBlendingTickableSystem"
+            name="LightingSystem"
         )
 
         self.tracked_lights = []
@@ -39,10 +39,9 @@ class LightingSystem():
             print('Selected primitive is not light: ', light)
             return
 
-        if light not in self.tracked_sphere_lights:
+        if light not in self.tracked_lights:
             print("Tracking new light: ", light)
-            # todo: track lights by path
-            self.tracked_sphere_lights.append(light)
+            self.tracked_lights.append(light)
             self.light_models.append(LightModel(light))
         else:
             print("Light is already being tracked!")
@@ -60,6 +59,9 @@ class LightingSystem():
         # todo
         # print(light)
         pass
+
+    def has_light(self, light):
+        return light in self.tracked_lights
 
     @staticmethod
     def get_sphere_light_position(light):

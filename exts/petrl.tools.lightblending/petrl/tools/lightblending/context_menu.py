@@ -18,7 +18,12 @@ class LightBlendingContextMenu:
             {
                 "name": "Add As Control Light",
                 "onclick_fn": LightBlendingContextMenu.add_light,
-                "show_fn": LightBlendingContextMenu.show_fn
+                "show_fn": LightBlendingContextMenu.show_add_fn
+            },
+            {
+                "name": "Remove Control Light",
+                "onclick_fn": LightBlendingContextMenu.remove_light,
+                "show_fn": LightBlendingContextMenu.show_remove_fn
             }
         ]
         # add to all context menus
@@ -33,20 +38,35 @@ class LightBlendingContextMenu:
             for light in objects['prim_list']:
                 LightingSystem.get_instance().add_light(light)
 
-    def show_fn(objects: dict):
+    def remove_light(objects):
+        if 'prim_list' in objects:
+            for light in objects['prim_list']:
+                LightingSystem.get_instance().remove_light(light)
+
+    def show_add_fn(objects: dict):
         print(objects)
 
         usd_context = usd.get_context()
         stage = usd_context.get_stage()
 
         prim_paths = usd_context.get_selection().get_selected_prim_paths()
-        # print(prim_paths)
 
         if len(prim_paths) > 0:
             prim = stage.GetPrimAtPath(prim_paths[0])
-            # print(prim)
-
             if prim.IsA(UsdLux.Light):
                 return True
+
+        return False
+
+    def show_remove_fn(objects: dict):
+        usd_context = usd.get_context()
+        stage = usd_context.get_stage()
+
+        prim_paths = usd_context.get_selection().get_selected_prim_paths()
+
+        if len(prim_paths) > 0:
+            prim = stage.GetPrimAtPath(prim_paths[0])
+            if prim.IsA(UsdLux.Light):
+                return not LightingSystem.get_instance().has_light(prim)
 
         return False

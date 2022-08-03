@@ -6,7 +6,6 @@ __all__ = ["LightModel"]
 
 class LightModel:
     def __init__(self, light):
-        # todo: establish live updates
         usd_light = UsdLux.Light(light)
 
         self._light_path = usd_light.GetPrim().GetPath().pathString
@@ -15,7 +14,6 @@ class LightModel:
         self._intensity = usd_light.GetIntensityAttr().Get()
         self._default_intensity = self._intensity
         print("Light intensity (current): ", self._intensity)
-        print("Light intensity (default): ", self._default_intensity)
 
         sphere_light = UsdLux.SphereLight(usd_light)
         if sphere_light:
@@ -25,15 +23,17 @@ class LightModel:
         # Add a Tf.Notice listener to update the light attributes
         stage = self._usd_context.get_stage()
         if not hasattr(self, "_stage_listener"):
-            print("Registered stage listener for light: ", self)
+            print("Registered stage listener for light: ", self._light_path)
             self._stage_listener = Tf.Notice.Register(Usd.Notice.ObjectsChanged, self._notice_changed, stage)
 
     def cleanup_listeners(self):
         print("Cleaning up stage listeners")
         if hasattr(self, "_stage_listener") and self._stage_listener:
-            print("Unregistered stage listener for light: ", self)
+            print("Unregistered stage listener for light: ", self._light_path)
             self._stage_listener.Revoke()
             self._stage_listener = None
+
+        self.set_intensity(self._default_intensity)
 
     @property
     def _usd_context(self) -> Usd.Stage:
