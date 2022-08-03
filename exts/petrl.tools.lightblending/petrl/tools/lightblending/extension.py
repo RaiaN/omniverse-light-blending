@@ -16,11 +16,13 @@ class MyExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
         print("[petrl.tools.lightblending] MyExtension startup")
 
+        viewport_window = get_active_viewport_window()
+
         # Build out the scene
-        self._viewport_scene = ViewportScene(get_active_viewport_window(), ext_id)
+        self._viewport_scene = ViewportScene(viewport_window, ext_id)
 
         self.light_system = LightingSystem.get_instance()
-        self.light_system.startup()
+        self.light_system.startup(self._viewport_scene)
 
         self.context_menu = LightBlendingContextMenu()
         self.context_menu.on_startup()

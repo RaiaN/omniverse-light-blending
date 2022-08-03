@@ -43,6 +43,9 @@ class LightBlendingContextMenu:
             for light in objects['prim_list']:
                 LightingSystem.get_instance().remove_light(light)
 
+    def show_fn(objects: dict):
+        return LightBlendingContextMenu.show_add_fn(objects) or LightBlendingContextMenu.show_remove_fn(objects)
+
     def show_add_fn(objects: dict):
         usd_context = usd.get_context()
         stage = usd_context.get_stage()
@@ -52,7 +55,7 @@ class LightBlendingContextMenu:
         if len(prim_paths) > 0:
             prim = stage.GetPrimAtPath(prim_paths[0])
             if prim.IsA(UsdLux.Light):
-                return True
+                return not LightingSystem.get_instance().has_light(prim)
 
         return False
 
@@ -65,6 +68,6 @@ class LightBlendingContextMenu:
         if len(prim_paths) > 0:
             prim = stage.GetPrimAtPath(prim_paths[0])
             if prim.IsA(UsdLux.Light):
-                return not LightingSystem.get_instance().has_light(prim)
+                return LightingSystem.get_instance().has_light(prim)
 
         return False

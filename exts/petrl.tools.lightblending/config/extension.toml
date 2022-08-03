@@ -16,12 +16,13 @@ repository = ""
 category = "Example"
 
 # Keywords for the extension
-keywords = ["kit", "example"]
+keywords = ["kit", "light blending", "light manipulation"]
 
 
 # Use omni.ui to build simple UI
 [dependencies]
 "omni.kit.uiapp" = {}
+"omni.kit.viewport.utility" = {}
 
 # Main python module this extension provides, it will be publicly available as "import petrl.tools.lightblending".
 [[python.module]]
