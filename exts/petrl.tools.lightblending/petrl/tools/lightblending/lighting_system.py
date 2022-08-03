@@ -11,7 +11,9 @@ __all__ = ["LightingSystem"]
 class LightingSystem():
     instance = None
 
-    def startup(self):
+    def startup(self, viewport_scene):
+        self._viewport_scene = viewport_scene
+
         app = omni.kit.app.get_app()
 
         self._update_end_sub = app.get_update_event_stream().create_subscription_to_pop(
@@ -42,7 +44,12 @@ class LightingSystem():
         if light not in self.tracked_lights:
             print("Tracking new light: ", light)
             self.tracked_lights.append(light)
-            self.light_models.append(LightModel(light))
+
+            model = LightModel(light)
+            self.light_models.append(model)
+
+            if light.IsA(UsdLux.DistantLight):
+                self._viewport_scene.add_light_model(model)
         else:
             print("Light is already being tracked!")
 
@@ -56,15 +63,22 @@ class LightingSystem():
         return result
 
     def remove_light(self, light):
-        # todo
-        # print(light)
+        # todo: remove light and its model
         pass
 
     def has_light(self, light):
         return light in self.tracked_lights
 
     @staticmethod
-    def get_sphere_light_position(light):
+    def get_light_position(light):
+        light_prim = UsdGeom.Imageable(light)
+        _, _, _, position = light_prim.ComputeLocalToWorldTransform(TimeCode())
+        position = position[:3]
+        position = Gf.Vec3f(position)
+
+        return position
+
+    def get_light_transform(self, light):
         light_prim = UsdGeom.Imageable(light)
         _, _, _, position = light_prim.ComputeLocalToWorldTransform(TimeCode())
         position = position[:3]
@@ -85,7 +99,7 @@ class LightingSystem():
 
     def update_sphere_lights(self, camera_position):
         for light, model in self.get_all_lights_of_type(UsdLux.SphereLight):
-            light_position = LightingSystem.get_sphere_light_position(light)
+            light_position = LightingSystem.get_light_position(light)
 
             distance_to_camera = (camera_position - light_position).GetLength()
 

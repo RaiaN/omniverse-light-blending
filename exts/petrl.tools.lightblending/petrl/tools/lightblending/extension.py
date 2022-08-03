@@ -1,6 +1,8 @@
 import omni.ext
+from omni.kit.viewport.utility import get_active_viewport_window
 from .context_menu import LightBlendingContextMenu
 from .lighting_system import LightingSystem
+from .viewport_scene import ViewportScene
 
 
 # Any class derived from `omni.ext.IExt` in top level module (defined in `python.modules` of `extension.toml`) will be
@@ -14,6 +16,9 @@ class MyExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
         print("[petrl.tools.lightblending] MyExtension startup")
 
+        # Build out the scene
+        self._viewport_scene = ViewportScene(get_active_viewport_window(), ext_id)
+
         self.light_system = LightingSystem.get_instance()
         self.light_system.startup()
 
@@ -22,5 +27,8 @@ class MyExtension(omni.ext.IExt):
 
     def on_shutdown(self):
         print("[petrl.tools.lightblending] MyExtension shutdown")
+        self._viewport_scene.destroy()
+        self._viewport_scene = None
+
         self.light_system.shutdown()
         self.context_menu.on_shutdown()

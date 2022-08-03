@@ -1,7 +1,29 @@
-from pxr import UsdLux, Tf, Usd
+from pxr import UsdLux, Tf, Usd, Gf
 import omni.usd
 
 __all__ = ["LightModel"]
+
+
+def _flatten_matrix(matrix: Gf.Matrix4d):
+    m0, m1, m2, m3 = matrix[0], matrix[1], matrix[2], matrix[3]
+    return [
+        m0[0],
+        m0[1],
+        m0[2],
+        m0[3],
+        m1[0],
+        m1[1],
+        m1[2],
+        m1[3],
+        m2[0],
+        m2[1],
+        m2[2],
+        m2[3],
+        m3[0],
+        m3[1],
+        m3[2],
+        m3[3],
+    ]
 
 
 class LightModel:
@@ -16,9 +38,14 @@ class LightModel:
         print("Light intensity (current): ", self._intensity)
 
         sphere_light = UsdLux.SphereLight(usd_light)
+        distant_light = UsdLux.DistantLight(usd_light)
         if sphere_light:
             self._radius = sphere_light.GetRadiusAttr().Get(Usd.TimeCode())
             print("Light radius: ", self._radius)
+        elif distant_light:
+            self._radius = 500
+
+        print("Light radius: ", self._radius)
 
         # Add a Tf.Notice listener to update the light attributes
         stage = self._usd_context.get_stage()
@@ -49,12 +76,24 @@ class LightModel:
     def get_radius(self):
         return self._radius
 
-    def set_intensity(self, new_intensity):
+    def get_light(self):
         stage = self._usd_context.get_stage()
         prim = stage.GetPrimAtPath(self._light_path)
-        usd_light = UsdLux.Light(prim)
+        return UsdLux.Light(prim)
 
-        usd_light.GetIntensityAttr().Set(new_intensity, Usd.TimeCode())
+    def _get_transform(self):
+        light = self.get_light()
+
+        # Compute matrix from world-transform in USD
+        world_xform = light.ComputeLocalToWorldTransform(Usd.TimeCode())
+
+        # Flatten Gf.Matrix4d to list
+        return _flatten_matrix(world_xform)
+
+    def set_intensity(self, new_intensity):
+        light = self.get_light()
+
+        light.GetIntensityAttr().Set(new_intensity, Usd.TimeCode())
         self._intensity = new_intensity
 
     def _notice_changed(self, notice, stage):
