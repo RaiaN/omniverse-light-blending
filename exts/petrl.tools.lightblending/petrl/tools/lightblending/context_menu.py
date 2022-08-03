@@ -16,7 +16,7 @@ class LightBlendingContextMenu:
                 "show_fn": LightBlendingContextMenu.show_fn
             },
             {
-                "name": "Add As Control Light",
+                "name": "Add Control Light",
                 "onclick_fn": LightBlendingContextMenu.add_light,
                 "show_fn": LightBlendingContextMenu.show_add_fn
             },
@@ -44,8 +44,6 @@ class LightBlendingContextMenu:
                 LightingSystem.get_instance().remove_light(light)
 
     def show_add_fn(objects: dict):
-        print(objects)
-
         usd_context = usd.get_context()
         stage = usd_context.get_stage()
 
