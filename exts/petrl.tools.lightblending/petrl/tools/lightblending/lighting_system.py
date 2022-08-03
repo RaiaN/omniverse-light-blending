@@ -78,14 +78,6 @@ class LightingSystem():
 
         return position
 
-    def get_light_transform(self, light):
-        light_prim = UsdGeom.Imageable(light)
-        _, _, _, position = light_prim.ComputeLocalToWorldTransform(TimeCode())
-        position = position[:3]
-        position = Gf.Vec3f(position)
-
-        return position
-
     def _on_update(self, args):
         camera_position = Gf.Vec3f(CameraUtils.GetCameraPosition())
         # print("Active camera position: ", camera_position)
