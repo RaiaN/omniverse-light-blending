@@ -18,8 +18,9 @@ class LightModel:
         print("Light intensity (default): ", self._default_intensity)
 
         sphere_light = UsdLux.SphereLight(usd_light)
-        self._radius = sphere_light.GetRadiusAttr().Get(Usd.TimeCode())
-        print("Light radius: ", self._radius)
+        if sphere_light:
+            self._radius = sphere_light.GetRadiusAttr().Get(Usd.TimeCode())
+            print("Light radius: ", self._radius)
 
         # Add a Tf.Notice listener to update the light attributes
         stage = self._usd_context.get_stage()
