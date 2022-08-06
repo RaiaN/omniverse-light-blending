@@ -18,7 +18,7 @@ class ViewportScene:
             self._scene_view = sc.SceneView()
 
             with self._scene_view.scene:
-                self._visualizer = DistantLightVisualizer()
+                self._visualizer = DistantLightVisualizer(model=None)
 
             # Register the SceneView with the Viewport to get projection and view updates
             self._viewport_window.viewport_api.add_scene_view(self._scene_view)

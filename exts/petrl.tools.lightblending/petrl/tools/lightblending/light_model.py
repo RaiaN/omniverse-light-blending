@@ -1,5 +1,6 @@
 import omni.usd
-from pxr import UsdLux, Usd, Gf, UsdGeom
+from pxr import UsdLux, Usd, Gf
+from omni.ui import scene as sc
 from .utils import LightUtils
 
 __all__ = ["LightModel"]
@@ -27,8 +28,10 @@ def _flatten_matrix(matrix: Gf.Matrix4d):
     ]
 
 
-class LightModel:
+class LightModel(sc.AbstractManipulatorModel):
     def __init__(self, light):
+        super().__init__()
+
         self._on_draw_event = None
 
         usd_light = UsdLux.Light(light)
@@ -128,7 +131,10 @@ class LightModel:
         if prim_paths[0] == self._light_path:
             print("Selected light: ", self._light_path)
             if self._on_draw_event:
-                self._on_draw_event()
+                self._on_draw_event(True)
+        else:
+            if self._on_draw_event:
+                self._on_draw_event(False)
 
         # Add a Tf.Notice listener to update the light attributes
         stage = self._usd_context.get_stage()

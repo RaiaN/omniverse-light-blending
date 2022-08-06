@@ -4,10 +4,10 @@ from omni.ui import color as cl
 __all__ = ["DistantLightVisualizer"]
 
 
-class DistantLightVisualizer():
-    def __init__(self):
-        self.model = None
-        self._shape_xform = None
+class DistantLightVisualizer(sc.Manipulator):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._enabled = True
 
     def __del__(self):
         self.model = None
@@ -19,41 +19,26 @@ class DistantLightVisualizer():
         self.model = model
         self.model.set_on_draw_event(self.on_draw_event)
 
-    def on_draw_event(self):
-        print("Visualize distant light")
-        self.on_build()
+    def on_draw_event(self, enabled):
+        self._enabled = enabled
+        self.invalidate()
 
     def on_build(self):
         """Called when the model is changed and rebuilds the whole slider"""
         model = self.model
-        if not model:
+        if not model or not self._enabled:
             return
 
-        # Style settings, as kwargs
-        thickness = 4
-        color = cl.yellow
-        shape_style = {"thickness": thickness, "color": color}
+        radius = self.model.get_radius()
 
         position = self.model.get_position()
-        print("Light position: ", position)
 
-        print("Drawing sphere")
-        # todo: draw sphere
-        # todo: take into account light intensity
         with sc.Transform(transform=sc.Matrix44.get_translation_matrix(*position)):
-            # the sphere
-            print("Drawing cube")
-            sc.Line([-1, -1, -1], [1, -1, -1])
-            sc.Line([-1, 1, -1], [1, 1, -1])
-            sc.Line([-1, -1, 1], [1, -1, 1])
-            sc.Line([-1, 1, 1], [1, 1, 1])
+            with sc.Transform(look_at=sc.Transform.LookAt.CAMERA):
+                sc.Arc(radius, axis=2, color=cl.yellow, wireframe=True)
+                sc.Arc(radius, axis=1, color=cl.yellow, wireframe=True)
+                sc.Arc(radius, axis=0, color=cl.yellow, wireframe=True)
 
-            sc.Line([-1, -1, -1], [-1, 1, -1])
-            sc.Line([1, -1, -1], [1, 1, -1])
-            sc.Line([-1, -1, 1], [-1, 1, 1])
-            sc.Line([1, -1, 1], [1, 1, 1])
-
-            sc.Line([-1, -1, -1], [-1, -1, 1])
-            sc.Line([-1, 1, -1], [-1, 1, 1])
-            sc.Line([1, -1, -1], [1, -1, 1])
-            sc.Line([1, 1, -1], [1, 1, 1])
+    def on_model_updated(self, item):
+        # Regenerate the mesh
+        self.invalidate()

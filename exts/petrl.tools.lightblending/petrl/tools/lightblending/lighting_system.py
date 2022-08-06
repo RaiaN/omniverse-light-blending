@@ -68,13 +68,12 @@ class LightingSystem():
     def has_light(self, light):
         return light in self._tracked_lights
 
-
     def _on_update(self, args):
-        camera_position = Gf.Vec3f(LightUtils.GetCameraPosition())
+        # todo: enable
+        # camera_position = Gf.Vec3f(LightUtils.GetCameraPosition())
         # print("Active camera position: ", camera_position)
 
         try:
-            # todo: enable
             z = 2
             # self.update_sphere_lights(camera_position)
             # self.update_dsstant_lights(camera_position)

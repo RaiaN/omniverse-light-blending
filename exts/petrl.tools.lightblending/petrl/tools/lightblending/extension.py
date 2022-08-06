@@ -1,3 +1,4 @@
+import carb
 import omni.ext
 from omni.kit.viewport.utility import get_active_viewport_window
 from .context_menu import LightBlendingContextMenu
@@ -17,6 +18,12 @@ class MyExtension(omni.ext.IExt):
         print("[petrl.tools.lightblending] MyExtension startup")
 
         viewport_window = get_active_viewport_window()
+        # Issue an error if there is no Viewport
+        if not viewport_window:
+            carb.log_error(f"No Viewport Window to add {ext_id} scene to")
+            return
+
+        print("Active viewport window: ", viewport_window)
 
         # Build out the scene
         self._viewport_scene = ViewportScene(viewport_window, ext_id)
