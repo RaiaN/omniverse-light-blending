@@ -5,6 +5,8 @@ from .utils import LightUtils
 
 __all__ = ["LightModel"]
 
+DEFAULT_DISTANT_LIGHT_RADIUS = 500
+
 
 class LightModel(sc.AbstractManipulatorModel):
     def __init__(self, light):
@@ -27,7 +29,7 @@ class LightModel(sc.AbstractManipulatorModel):
         if sphere_light:
             self._radius = sphere_light.GetRadiusAttr().Get(Usd.TimeCode())
         elif distant_light:
-            self._radius = 500
+            self._radius = DEFAULT_DISTANT_LIGHT_RADIUS
 
         print("Light radius: ", self._radius)
 
@@ -78,6 +80,11 @@ class LightModel(sc.AbstractManipulatorModel):
 
         light.GetIntensityAttr().Set(new_intensity, Usd.TimeCode())
         self._intensity = new_intensity
+
+    def set_radius(self, new_radius):
+        # only called by distant light widget
+        self._radius = new_radius
+        self._on_draw_event(True)
 
     def set_on_draw_event(self, event):
         self._on_draw_event = event
