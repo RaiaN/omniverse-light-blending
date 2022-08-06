@@ -29,8 +29,16 @@ class MyExtension(omni.ext.IExt):
 
     def on_shutdown(self):
         print("[petrl.tools.lightblending] MyExtension shutdown")
-        self._viewport_scene.destroy()
-        self._viewport_scene = None
+        if self._viewport_scene:
+            self._viewport_scene.destroy()
+            self._viewport_scene = None
 
-        self.light_system.shutdown()
-        self.context_menu.on_shutdown()
+        if self.light_system:
+            self.light_system.shutdown()
+            self.light_system = None
+
+        if self.context_menu:
+            self.context_menu.on_shutdown()
+            self.context_menu = None
+
+        LightingSystem.instance = None

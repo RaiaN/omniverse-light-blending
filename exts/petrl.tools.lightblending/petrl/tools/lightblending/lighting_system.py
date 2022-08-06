@@ -1,9 +1,8 @@
 import omni.kit.app
+import omni.usd
 from pxr import UsdLux, UsdGeom, Gf
-from pxr.Usd import TimeCode
-
 from .light_model import LightModel
-from .camera_utils import CameraUtils
+from .utils import LightUtils
 
 __all__ = ["LightingSystem"]
 
@@ -12,6 +11,9 @@ class LightingSystem():
     instance = None
 
     def startup(self, viewport_scene):
+        self._tracked_lights = []
+        self._light_models = []
+
         self._viewport_scene = viewport_scene
 
         app = omni.kit.app.get_app()
@@ -21,11 +23,8 @@ class LightingSystem():
             name="LightingSystem"
         )
 
-        self.tracked_lights = []
-        self.light_models = []
-
     def shutdown(self):
-        for model in self.light_models:
+        for model in self._light_models:
             print("Cleaning up light model: ", model)
             model.cleanup_listeners()
 
@@ -33,30 +32,30 @@ class LightingSystem():
             print("Unsubscribe from update event stream")
             self._update_end_sub.unsubscribe()
 
-        self.tracked_lights = []
-        self.light_models = []
+        self._tracked_lights = []
+        self._light_models = []
 
     def add_light(self, light):
         if not light.IsA(UsdLux.Light):
             print('Selected primitive is not light: ', light)
             return
 
-        if light not in self.tracked_lights:
+        if light not in self._tracked_lights:
             print("Tracking new light: ", light)
-            self.tracked_lights.append(light)
+            self._tracked_lights.append(light)
 
             model = LightModel(light)
-            self.light_models.append(model)
+            self._light_models.append(model)
 
             if light.IsA(UsdLux.DistantLight):
-                self._viewport_scene.add_light_model(model)
+                self._viewport_scene.set_light_model(model)
         else:
             print("Light is already being tracked!")
 
     def get_all_lights_of_type(self, light_type: UsdLux.Light):
         result = []
 
-        for light, model in zip(self.tracked_lights, self.light_models):
+        for light, model in zip(self._tracked_lights, self._light_models):
             if light.IsA(light_type):
                 result.append((light, model))
 
@@ -67,31 +66,25 @@ class LightingSystem():
         pass
 
     def has_light(self, light):
-        return light in self.tracked_lights
+        return light in self._tracked_lights
 
-    @staticmethod
-    def get_light_position(light):
-        light_prim = UsdGeom.Imageable(light)
-        _, _, _, position = light_prim.ComputeLocalToWorldTransform(TimeCode())
-        position = position[:3]
-        position = Gf.Vec3f(position)
-
-        return position
 
     def _on_update(self, args):
-        camera_position = Gf.Vec3f(CameraUtils.GetCameraPosition())
+        camera_position = Gf.Vec3f(LightUtils.GetCameraPosition())
         # print("Active camera position: ", camera_position)
 
         try:
-            self.update_sphere_lights(camera_position)
-            self.update_distant_lights(camera_position)
+            # todo: enable
+            z = 2
+            # self.update_sphere_lights(camera_position)
+            # self.update_dsstant_lights(camera_position)
 
         except Exception as exc:
             print("Exception when updating lights: ", exc)
 
     def update_sphere_lights(self, camera_position):
         for light, model in self.get_all_lights_of_type(UsdLux.SphereLight):
-            light_position = LightingSystem.get_light_position(light)
+            light_position = LightUtils.get_light_position(light)
 
             distance_to_camera = (camera_position - light_position).GetLength()
 

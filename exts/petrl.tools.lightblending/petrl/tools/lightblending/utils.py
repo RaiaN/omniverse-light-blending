@@ -1,11 +1,12 @@
 import omni.kit
-from pxr import UsdGeom
+from pxr import UsdGeom, Gf
+from pxr.Usd import TimeCode
 
 
-__all__ = ["CameraUtils"]
+__all__ = ["LightUtils"]
 
 
-class CameraUtils:
+class LightUtils:
     @staticmethod
     def GetCameraPosition():
         viewport_window = omni.kit.viewport_legacy.get_default_viewport_window()
@@ -18,3 +19,12 @@ class CameraUtils:
 
         camera_position_world_space = camera.transform.ExtractTranslation()
         return camera_position_world_space
+
+    @staticmethod
+    def get_light_position(light):
+        light_prim = UsdGeom.Imageable(light)
+        _, _, _, position = light_prim.ComputeLocalToWorldTransform(TimeCode())
+        position = position[:3]
+        position = Gf.Vec3f(position)
+
+        return position

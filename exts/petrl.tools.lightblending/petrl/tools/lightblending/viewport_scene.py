@@ -1,6 +1,6 @@
 from omni.ui import scene as sc
 
-from .distant_light_manipulator import DistantLightManipulator
+from .distant_light_visualizer import DistantLightVisualizer
 
 __all__ = ["ViewportScene"]
 
@@ -16,6 +16,9 @@ class ViewportScene:
         with self._viewport_window.get_frame(ext_id):
             # Create a default SceneView (it has a default camera-model)
             self._scene_view = sc.SceneView()
+
+            with self._scene_view.scene:
+                self._visualizer = DistantLightVisualizer()
 
             # Register the SceneView with the Viewport to get projection and view updates
             self._viewport_window.viewport_api.add_scene_view(self._scene_view)
@@ -35,7 +38,5 @@ class ViewportScene:
         self._viewport_window = None
         self._scene_view = None
 
-    def add_light_model(self, light_model):
-        # Add the manipulator into the SceneView's scene
-        with self._scene_view.scene:
-            DistantLightManipulator(model=light_model)
+    def set_light_model(self, model):
+        self._visualizer.set_model(model)

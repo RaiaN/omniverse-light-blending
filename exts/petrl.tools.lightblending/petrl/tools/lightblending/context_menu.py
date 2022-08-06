@@ -60,14 +60,4 @@ class LightBlendingContextMenu:
         return False
 
     def show_remove_fn(objects: dict):
-        usd_context = usd.get_context()
-        stage = usd_context.get_stage()
-
-        prim_paths = usd_context.get_selection().get_selected_prim_paths()
-
-        if len(prim_paths) > 0:
-            prim = stage.GetPrimAtPath(prim_paths[0])
-            if prim.IsA(UsdLux.Light):
-                return LightingSystem.get_instance().has_light(prim)
-
-        return False
+        return not LightBlendingContextMenu.show_add_fn(objects)

@@ -1,5 +1,6 @@
-from pxr import UsdLux, Tf, Usd, Gf
 import omni.usd
+from pxr import UsdLux, Usd, Gf, UsdGeom
+from .utils import LightUtils
 
 __all__ = ["LightModel"]
 
@@ -28,6 +29,8 @@ def _flatten_matrix(matrix: Gf.Matrix4d):
 
 class LightModel:
     def __init__(self, light):
+        self._on_draw_event = None
+
         usd_light = UsdLux.Light(light)
 
         self._light_path = usd_light.GetPrim().GetPath().pathString
@@ -41,20 +44,21 @@ class LightModel:
         distant_light = UsdLux.DistantLight(usd_light)
         if sphere_light:
             self._radius = sphere_light.GetRadiusAttr().Get(Usd.TimeCode())
-            print("Light radius: ", self._radius)
         elif distant_light:
+            # todo: define proper default radius for distant light
             self._radius = 500
 
         print("Light radius: ", self._radius)
 
-        # Add a Tf.Notice listener to update the light attributes
-        stage = self._usd_context.get_stage()
-        if not hasattr(self, "_stage_listener"):
-            print("Registered stage listener for light: ", self._light_path)
-            self._stage_listener = Tf.Notice.Register(Usd.Notice.ObjectsChanged, self._notice_changed, stage)
+        # Listen for object selection changes
+        self._events = self._usd_context.get_stage_event_stream()
+        self._stage_event_sub = self._events.create_subscription_to_pop(
+            self._on_stage_event, name="Light Manipulator Selection Change"
+        )
 
     def cleanup_listeners(self):
         print("Cleaning up stage listeners")
+
         if hasattr(self, "_stage_listener") and self._stage_listener:
             print("Unregistered stage listener for light: ", self._light_path)
             self._stage_listener.Revoke()
@@ -81,7 +85,7 @@ class LightModel:
         prim = stage.GetPrimAtPath(self._light_path)
         return UsdLux.Light(prim)
 
-    def _get_transform(self):
+    def get_transform(self):
         light = self.get_light()
 
         # Compute matrix from world-transform in USD
@@ -90,17 +94,55 @@ class LightModel:
         # Flatten Gf.Matrix4d to list
         return _flatten_matrix(world_xform)
 
+    def get_position(self):
+        light = self.get_light()
+        return LightUtils.get_light_position(light)
+
     def set_intensity(self, new_intensity):
         light = self.get_light()
 
         light.GetIntensityAttr().Set(new_intensity, Usd.TimeCode())
         self._intensity = new_intensity
 
+    def set_on_draw_event(self, event):
+        self._on_draw_event = event
+
+    def _on_stage_event(self, event):
+        """Called by stage_event_stream"""
+        if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
+            self._on_kit_selection_changed()
+
+    def _on_kit_selection_changed(self):
+        usd_context = self._usd_context
+        if not usd_context:
+            return
+
+        stage = usd_context.get_stage()
+        if not stage:
+            return
+
+        prim_paths = usd_context.get_selection().get_selected_prim_paths() if usd_context else None
+        if not prim_paths:
+            return
+
+        if prim_paths[0] == self._light_path:
+            print("Selected light: ", self._light_path)
+            if self._on_draw_event:
+                self._on_draw_event()
+
+        # Add a Tf.Notice listener to update the light attributes
+        stage = self._usd_context.get_stage()
+        # if not hasattr(self, "_stage_listener"):
+        #     print("Registered stage listener for light: ", self._light_path)
+        #     self._stage_listener = Tf.Notice.Register(Usd.Notice.ObjectsChanged, self._notice_changed, stage)
+
     def _notice_changed(self, notice, stage):
         """Called by Tf.Notice. When USD data changes, we update light model"""
 
+        changed_items = set()
+
         # changed_items = set()
-        '''for p in notice.GetChangedInfoOnlyPaths():
+        for p in notice.GetChangedInfoOnlyPaths():
             prim_path = p.GetPrimPath().pathString
 
             if prim_path != self._light_path:
@@ -112,11 +154,19 @@ class LightModel:
 
                 print("Light intensity changed for object: ", usd_light)
 
-                self._intensity = usd_light.GetIntensityAttr().Get()
+                if self._on_draw_event:
+                    self._on_draw_event()
 
-                print("Light intensity changed to: ", self._intensity)
+                # self._intensity = usd_light.GetIntensityAttr().Get()
+                # changed_items.add(self._intensity)
 
-            # todo: listen for 'radius' changes'''
+                # print("Light intensity changed to: ", self._intensity)
+            elif p.name == "radius":
+                if self._on_draw_event:
+                    self._on_draw_event()
 
-        # for item in changed_items:
-        #     self._item_changed(item)
+            # todo: how to handle radius changes for distant light?
+            # todo: use custom widget to set radius for distant light?
+
+        for item in changed_items:
+            self._item_changed(item)
