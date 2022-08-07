@@ -32,6 +32,7 @@ class LightBlendingContextMenu:
     def on_shutdown(self):
         # remove event
         self._stage_event_sub = None
+        self._my_custom_menu = None
 
     def add_light(objects):
         if 'prim_list' in objects:
