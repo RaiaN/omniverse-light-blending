@@ -63,7 +63,9 @@ class LightModel(sc.AbstractManipulatorModel):
     def _set_intensity(self, new_intensity):
         light = self.get_light()
 
-        light.GetIntensityAttr().Set(new_intensity, Usd.TimeCode())
+        # print(light.GetIntensityAttr().GetVariability())
+
+        light.GetIntensityAttr().Set(new_intensity, Usd.TimeCode.Default())
         self._intensity = new_intensity
 
     def update_light_intensity(self, camera_position):
