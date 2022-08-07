@@ -13,5 +13,10 @@ class DistantLightModel(LightModel):
         print("Light radius: ", self._radius)
 
     def update_light_intensity(self, camera_position):
-        # todo:
-        self._set_intensity(0)
+        light_position = self.get_position()
+        distance_to_camera = (camera_position - light_position).GetLength()
+
+        if distance_to_camera < self.get_radius():
+            self._set_intensity(self.get_default_intensity())
+        else:
+            self._set_intensity(0)

@@ -6,16 +6,9 @@ from .lighting_system import LightingSystem
 from .viewport_scene import ViewportScene
 
 
-# Any class derived from `omni.ext.IExt` in top level module (defined in `python.modules` of `extension.toml`) will be
-# instantiated when extension gets enabled and `on_startup(ext_id)` will be called. Later when extension gets disabled
-# on_shutdown() is called.
-
-
-class MyExtension(omni.ext.IExt):
-    # ext_id is current extension id. It can be used with extension manager to query additional information, like where
-    # this extension is located on filesystem.
+class LightBlendingExtension(omni.ext.IExt):
     def on_startup(self, ext_id):
-        print("[petrl.tools.lightblending] MyExtension startup")
+        print("[petrl.tools.lightblending] LightBlendingExtension startup")
 
         viewport_window = get_active_viewport_window()
         # Issue an error if there is no Viewport
@@ -35,7 +28,7 @@ class MyExtension(omni.ext.IExt):
         self.context_menu.on_startup()
 
     def on_shutdown(self):
-        print("[petrl.tools.lightblending] MyExtension shutdown")
+        print("[petrl.tools.lightblending] LightBlendingExtension shutdown")
         if self._viewport_scene:
             self._viewport_scene.destroy()
             self._viewport_scene = None
