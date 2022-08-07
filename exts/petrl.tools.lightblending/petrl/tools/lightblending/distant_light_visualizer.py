@@ -76,10 +76,11 @@ class DistantLightVisualizer(sc.Manipulator):
 
     def set_model(self, model):
         if self.model:
-            self.model.set_on_draw_event(None)
+            self.model.set_on_model_dirty_event(None)
 
         self.model = model
-        self.model.set_on_draw_event(self.on_draw_event)
+        if self.model:
+            self.model.set_on_model_dirty_event(self.on_draw_event)
 
         self.on_draw_event(True)
 

@@ -16,7 +16,6 @@ class ViewportScene:
         with self._viewport_window.get_frame(ext_id):
             # Create a default SceneView (it has a default camera-model)
             self._scene_view = sc.SceneView()
-
             with self._scene_view.scene:
                 self._visualizer = DistantLightVisualizer(model=None)
 
@@ -37,6 +36,7 @@ class ViewportScene:
         # Remove our references to these objects
         self._viewport_window = None
         self._scene_view = None
+        self._visualizer = None
 
-    def set_light_model(self, model):
+    def set_model(self, model):
         self._visualizer.set_model(model)

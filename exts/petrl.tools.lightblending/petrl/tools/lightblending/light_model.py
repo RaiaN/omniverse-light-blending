@@ -1,5 +1,5 @@
 import omni.usd
-from pxr import UsdLux, Usd, Tf
+from pxr import UsdLux, Usd
 from omni.ui import scene as sc
 from .utils import LightUtils
 
@@ -12,7 +12,7 @@ class LightModel(sc.AbstractManipulatorModel):
     def __init__(self, light):
         super().__init__()
 
-        self._on_draw_event = None
+        self._on_model_dirty_event = None
         self._stage_listener = None
 
         usd_light = UsdLux.Light(light)
@@ -33,21 +33,17 @@ class LightModel(sc.AbstractManipulatorModel):
 
         print("Light radius: ", self._radius)
 
-        # Listen for object selection changes
-        self._events = self._usd_context.get_stage_event_stream()
-        self._stage_event_sub = self._events.create_subscription_to_pop(
-            self._on_stage_event, name="Light Manipulator Selection Change"
-        )
-
     def cleanup_listeners(self):
         print("Cleaning up stage listeners")
 
-        if self._stage_listener:
-            print("Unregistered stage listener for light: ", self._light_path)
-            self._stage_listener.Revoke()
-            self._stage_listener = None
-
         self.set_intensity(self._default_intensity)
+
+    def set_on_model_dirty_event(self, event):
+        self._on_model_dirty_event = event
+
+    def mark_as_dirty(self):
+        if self._on_model_dirty_event:
+            self._on_model_dirty_event(True)
 
     @property
     def _usd_context(self) -> Usd.Stage:
@@ -84,77 +80,4 @@ class LightModel(sc.AbstractManipulatorModel):
     def set_radius(self, new_radius):
         # only called by distant light widget
         self._radius = new_radius
-        self._on_draw_event(True)
-
-    def set_on_draw_event(self, event):
-        self._on_draw_event = event
-
-    def _on_stage_event(self, event):
-        """Called by stage_event_stream"""
-        if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
-            self._on_kit_selection_changed()
-
-    def _on_kit_selection_changed(self):
-        usd_context = self._usd_context
-        if not usd_context:
-            return
-
-        stage = usd_context.get_stage()
-        if not stage:
-            return
-
-        prim_paths = usd_context.get_selection().get_selected_prim_paths() if usd_context else None
-        if not prim_paths:
-            return
-
-        if prim_paths[0] == self._light_path:
-            print("Selected light: ", self._light_path)
-            if self._on_draw_event:
-                self._on_draw_event(True)
-        else:
-            if self._stage_listener:
-                self._stage_listener.Revoke()
-                self._stage_listener = None
-
-            if self._on_draw_event:
-                self._on_draw_event(False)
-
-        # Add a Tf.Notice listener to update the light attributes
-        if self._stage_listener is None:
-            print("Registered stage listener for light: ", self._light_path)
-
-            stage = self._usd_context.get_stage()
-            self._stage_listener = Tf.Notice.Register(Usd.Notice.ObjectsChanged, self._notice_changed, stage)
-
-    def _notice_changed(self, notice, stage):
-        """Called by Tf.Notice. When USD data changes, we update light model"""
-
-        changed_items = set()
-
-        for p in notice.GetChangedInfoOnlyPaths():
-            prim_path = p.GetPrimPath().pathString
-
-            if prim_path != self._light_path:
-                continue
-
-            print("Attribute changed: ", p.name)
-
-            if p.name == "intensity":
-                prim = stage.GetPrimAtPath(prim_path)
-                usd_light = UsdLux.Light(prim)
-
-                print("Light intensity changed for object: ", usd_light)
-
-                # self._intensity = usd_light.GetIntensityAttr().Get()
-                # changed_items.add(self._intensity)
-
-                # print("Light intensity changed to: ", self._intensity)
-            elif p.name == "radius":
-                if self._on_draw_event:
-                    self._on_draw_event(True)
-            elif "translate" in p.name:
-                if self._on_draw_event:
-                    self._on_draw_event(True)
-
-        for item in changed_items:
-            self._item_changed(item)
+        self.mark_as_dirty()
