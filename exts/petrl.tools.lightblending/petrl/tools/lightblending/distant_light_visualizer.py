@@ -105,10 +105,11 @@ class DistantLightVisualizer(sc.Manipulator):
                 sc.Arc(radius, axis=0, color=cl.yellow, wireframe=True)
 
         with sc.Transform(transform=sc.Matrix44.get_translation_matrix(*position)):
-            with sc.Transform(scale_to=sc.Space.SCREEN):
-                with sc.Transform(transform=sc.Matrix44.get_translation_matrix(0, 100, -300)):
-                    self._widget = sc.Widget(500, 200, update_policy=sc.Widget.UpdatePolicy.ON_MOUSE_HOVERED)
-                    self._widget.frame.set_build_fn(self.on_build_widgets)
+            with sc.Transform(look_at=sc.Transform.LookAt.CAMERA):
+                with sc.Transform(scale_to=sc.Space.SCREEN):
+                    with sc.Transform(transform=sc.Matrix44.get_translation_matrix(0, 100, -300)):
+                        self._widget = sc.Widget(500, 200, update_policy=sc.Widget.UpdatePolicy.ON_MOUSE_HOVERED)
+                        self._widget.frame.set_build_fn(self.on_build_widgets)
 
     def on_build_widgets(self):
         with ui.ZStack():
