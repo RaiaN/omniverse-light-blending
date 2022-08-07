@@ -1,5 +1,4 @@
 from pxr import UsdLux, Usd
-from omni.ui import scene as sc
 from .light_model import LightModel
 
 __all__ = ["SphereLightModel"]
