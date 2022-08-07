@@ -5,8 +5,6 @@ from .utils import LightUtils
 
 __all__ = ["LightModel"]
 
-DEFAULT_DISTANT_LIGHT_RADIUS = 500
-
 
 class LightModel(sc.AbstractManipulatorModel):
     def __init__(self, light):
@@ -24,18 +22,7 @@ class LightModel(sc.AbstractManipulatorModel):
         self._default_intensity = self._intensity
         print("Light intensity (current): ", self._intensity)
 
-        sphere_light = UsdLux.SphereLight(usd_light)
-        distant_light = UsdLux.DistantLight(usd_light)
-        if sphere_light:
-            self._radius = sphere_light.GetRadiusAttr().Get(Usd.TimeCode())
-        elif distant_light:
-            self._radius = DEFAULT_DISTANT_LIGHT_RADIUS
-
-        print("Light radius: ", self._radius)
-
-    def cleanup_listeners(self):
-        print("Cleaning up stage listeners")
-
+    def on_shutdown(self):
         self.set_intensity(self._default_intensity)
 
     def set_on_model_dirty_event(self, event):

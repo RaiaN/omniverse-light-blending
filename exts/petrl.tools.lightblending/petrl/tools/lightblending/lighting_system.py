@@ -1,7 +1,9 @@
 import omni.kit.app
 import omni.usd
+from petrl.tools.lightblending.distant_light_model import DistantLightModel
 from pxr import Usd, UsdLux, UsdGeom, Gf, Tf
-from .light_model import LightModel
+from .distant_light_model import DistantLightModel
+from .sphere_light_model import SphereLightModel
 from .utils import LightUtils
 
 __all__ = ["LightingSystem"]
@@ -37,7 +39,7 @@ class LightingSystem():
     def shutdown(self):
         for model in self._light_models:
             print("Cleaning up light model: ", model)
-            model.cleanup_listeners()
+            model.on_shutdown()
 
         if hasattr(self, "_update_end_sub") and self._update_end_sub is not None:
             print("Unsubscribe from update event stream")
@@ -61,15 +63,33 @@ class LightingSystem():
             return
 
         if light not in self._tracked_lights:
-            print("Tracking new light: ", light)
-            self._tracked_lights.append(light)
+            model = None
+            if light.IsA(UsdLux.DistantLight):
+                model = DistantLightModel(light)
+            elif light.IsA(UsdLux.SphereLight):
+                model = SphereLightModel(light)
 
-            model = LightModel(light)
+            if not model:
+                print("Light is not supported: ", light)
+                return
+
+            print("Tracking new light: ", light)
+
+            self._tracked_lights.append(light)
             self._light_models.append(model)
 
             self._on_kit_selection_changed()
         else:
             print("Light is already being tracked!")
+
+    def remove_light(self, light_to_remove):
+        for light, model in zip(self._tracked_lights, self._light_models):
+            if light == light_to_remove:
+                print("Stopped tracking light: ", light)
+                model.on_shutdown()
+                self._tracked_lights.remove(light_to_remove)
+                self._light_models.remove(model)
+                break
 
     def get_all_lights_of_type(self, light_type: UsdLux.Light):
         result = []
@@ -80,21 +100,15 @@ class LightingSystem():
 
         return result
 
-    def remove_light(self, light):
-        # todo: remove light and its model
-        pass
-
     def has_light(self, light):
         return light in self._tracked_lights
 
     def _on_update(self, args):
-        # todo: enable
-        # camera_position = Gf.Vec3f(LightUtils.GetCameraPosition())
+        camera_position = Gf.Vec3f(LightUtils.get_camera_position())
         # print("Active camera position: ", camera_position)
 
         try:
-            z = 2
-            # self.update_sphere_lights(camera_position)
+            self.update_sphere_lights(camera_position)
             # self.update_dsstant_lights(camera_position)
 
         except Exception as exc:
@@ -158,7 +172,7 @@ class LightingSystem():
 
         selected_prim_path = prim_paths[0]
 
-        for model in self._light_models:
+        for _, model in self.get_all_lights_of_type(UsdLux.DistantLight):
             if model.get_light_path() == selected_prim_path:
                 self._viewport_scene.set_model(model)
                 return
@@ -173,7 +187,7 @@ class LightingSystem():
         for p in notice.GetChangedInfoOnlyPaths():
             prim_path = p.GetPrimPath().pathString
 
-            for model in self._light_models:
+            for _, model in self.get_all_lights_of_type(UsdLux.DistantLight):
                 if model.get_light_path() != prim_path:
                     continue
 

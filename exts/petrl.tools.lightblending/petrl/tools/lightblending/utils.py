@@ -8,7 +8,7 @@ __all__ = ["LightUtils"]
 
 class LightUtils:
     @staticmethod
-    def GetCameraPosition():
+    def get_camera_position():
         viewport_window = omni.kit.viewport_legacy.get_default_viewport_window()
 
         camera_path = viewport_window.get_active_camera()
