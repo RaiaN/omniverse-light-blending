@@ -106,7 +106,6 @@ class LightingSystem():
 
     def _on_update(self, args):
         camera_position = Gf.Vec3f(LightUtils.get_camera_position())
-        # print("Active camera position: ", camera_position)
 
         try:
             for model in self._light_models:
@@ -118,7 +117,6 @@ class LightingSystem():
     @staticmethod
     def get_instance():
         if LightingSystem.instance is None:
-            # print("creating new lighting system")
             LightingSystem.instance = LightingSystem()
 
         return LightingSystem.instance
@@ -161,8 +159,6 @@ class LightingSystem():
     def _notice_changed(self, notice, stage):
         """Called by Tf.Notice. When USD data changes, we update light model"""
 
-        changed_items = set()
-
         for p in notice.GetChangedInfoOnlyPaths():
             prim_path = p.GetPrimPath().pathString
 
@@ -170,23 +166,7 @@ class LightingSystem():
                 if model.get_light_path() != prim_path:
                     continue
 
-                print("Attribute changed: ", p.name)
-
-                if p.name == "intensity":
-                    prim = stage.GetPrimAtPath(prim_path)
-                    usd_light = UsdLux.Light(prim)
-
-                    print("Light intensity changed for object: ", usd_light)
-
-                    # self._intensity = usd_light.GetIntensityAttr().Get()
-                    # changed_items.add(self._intensity)
-
-                    # print("Light intensity changed to: ", self._intensity)
-                elif p.name == "radius":
+                if p.name == "radius":
                     model.mark_as_dirty()
                 elif "translate" in p.name:
                     model.mark_as_dirty()
-
-            # todo: any plans to use it?
-            for item in changed_items:
-                self._item_changed(item)
