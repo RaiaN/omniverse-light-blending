@@ -109,33 +109,11 @@ class LightingSystem():
         # print("Active camera position: ", camera_position)
 
         try:
-            self.update_sphere_lights(camera_position)
-            # self.update_dsstant_lights(camera_position)
+            for model in self._light_models:
+                model.update_light_intensity(camera_position)
 
         except Exception as exc:
             print("Exception when updating lights: ", exc)
-
-    def update_sphere_lights(self, camera_position):
-        for light, model in self.get_all_lights_of_type(UsdLux.SphereLight):
-            light_position = LightUtils.get_light_position(light)
-
-            distance_to_camera = (camera_position - light_position).GetLength()
-
-            light_weight = float(distance_to_camera / (model.get_radius() + 0.0001))
-            # print("Light weight: ", light_weight)
-
-            new_intensity = 1.0 - min(1.0, light_weight)
-            # print(new_intensity)
-            new_intensity = new_intensity * model.get_default_intensity()
-            # print(new_intensity)
-            # print("New intensity: ", new_intensity)
-
-            model.set_intensity(new_intensity)
-
-    def update_distant_lights(self, camera_position):
-        for light, model in self.get_all_lights_of_type(UsdLux.DistantLight):
-            # todo: think how to support distant lights
-            pass
 
     @staticmethod
     def get_instance():

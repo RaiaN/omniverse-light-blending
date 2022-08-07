@@ -11,3 +11,7 @@ class DistantLightModel(LightModel):
 
         self._radius = DEFAULT_DISTANT_LIGHT_RADIUS
         print("Light radius: ", self._radius)
+
+    def update_light_intensity(self, camera_position):
+        # todo:
+        self._set_intensity(0)

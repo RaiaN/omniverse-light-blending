@@ -23,7 +23,7 @@ class LightModel(sc.AbstractManipulatorModel):
         print("Light intensity (current): ", self._intensity)
 
     def on_shutdown(self):
-        self.set_intensity(self._default_intensity)
+        self._set_intensity(self._default_intensity)
 
     def set_on_model_dirty_event(self, event):
         self._on_model_dirty_event = event
@@ -43,9 +43,6 @@ class LightModel(sc.AbstractManipulatorModel):
     def get_default_intensity(self):
         return self._default_intensity
 
-    def get_intensity(self):
-        return self._intensity
-
     def get_radius(self):
         return self._radius
 
@@ -58,13 +55,16 @@ class LightModel(sc.AbstractManipulatorModel):
         light = self.get_light()
         return LightUtils.get_light_position(light)
 
-    def set_intensity(self, new_intensity):
+    def set_radius(self, new_radius):
+        # only called by distant light widget
+        self._radius = new_radius
+        self.mark_as_dirty()
+
+    def _set_intensity(self, new_intensity):
         light = self.get_light()
 
         light.GetIntensityAttr().Set(new_intensity, Usd.TimeCode())
         self._intensity = new_intensity
 
-    def set_radius(self, new_radius):
-        # only called by distant light widget
-        self._radius = new_radius
-        self.mark_as_dirty()
+    def update_light_intensity(self, camera_position):
+        raise NotImplementedError("Implement this method for classes that inherit LightModel")

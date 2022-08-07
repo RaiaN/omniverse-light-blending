@@ -15,3 +15,17 @@ class SphereLightModel(LightModel):
         self._radius = sphere_light.GetRadiusAttr().Get(Usd.TimeCode())
 
         print("Light radius: ", self._radius)
+
+    def update_light_intensity(self, camera_position):
+        light_position = self.get_position()
+        distance_to_camera = (camera_position - light_position).GetLength()
+        light_weight = float(distance_to_camera / (self.get_radius() + 0.0001))
+        # print("Light weight: ", light_weight)
+
+        new_intensity = 1.0 - min(1.0, light_weight)
+        # print(new_intensity)
+        new_intensity = new_intensity * self.get_default_intensity()
+        # print(new_intensity)
+        # print("New intensity: ", new_intensity)
+
+        self.set_intensity(new_intensity)
