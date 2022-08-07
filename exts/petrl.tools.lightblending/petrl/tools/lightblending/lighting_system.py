@@ -1,7 +1,6 @@
 import omni.kit.app
 import omni.usd
-from petrl.tools.lightblending.distant_light_model import DistantLightModel
-from pxr import Usd, UsdLux, UsdGeom, Gf, Tf
+from pxr import Usd, UsdLux, Gf, Tf
 from .distant_light_model import DistantLightModel
 from .sphere_light_model import SphereLightModel
 from .utils import LightUtils
@@ -59,7 +58,7 @@ class LightingSystem():
 
     def add_light(self, light):
         if not light.IsA(UsdLux.Light):
-            print('Selected primitive is not light: ', light)
+            print('Selected primitive is not a light: ', light)
             return
 
         if light not in self._tracked_lights:
@@ -82,14 +81,16 @@ class LightingSystem():
         else:
             print("Light is already being tracked!")
 
-    def remove_light(self, light_to_remove):
-        for light, model in zip(self._tracked_lights, self._light_models):
-            if light == light_to_remove:
-                print("Stopped tracking light: ", light)
-                model.on_shutdown()
-                self._tracked_lights.remove(light_to_remove)
-                self._light_models.remove(model)
-                break
+    def remove_light(self, light):
+        if not light.IsA(UsdLux.Light):
+            print('Selected primitive is not a light: ', light)
+            return
+
+        if light in self._tracked_lights:
+            index = self._tracked_lights.index(light)
+            del self._tracked_lights[index]
+            model = self._light_models.pop(index)
+            model.on_shutdown()
 
     def get_all_lights_of_type(self, light_type: UsdLux.Light):
         result = []
