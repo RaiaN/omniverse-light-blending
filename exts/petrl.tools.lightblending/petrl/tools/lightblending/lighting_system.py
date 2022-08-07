@@ -3,6 +3,7 @@ import omni.usd
 from pxr import Usd, UsdLux, Gf, Tf
 from .distant_light_model import DistantLightModel
 from .sphere_light_model import SphereLightModel
+from .disk_light_model import DiskLightModel
 from .utils import LightUtils
 
 __all__ = ["LightingSystem"]
@@ -71,6 +72,8 @@ class LightingSystem():
                 model = DistantLightModel(light)
             elif light.IsA(UsdLux.SphereLight):
                 model = SphereLightModel(light)
+            elif light.IsA(UsdLux.DiskLight):
+                model = DiskLightModel(light)
 
             if not model:
                 print("Light is not supported: ", light)
