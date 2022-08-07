@@ -10,8 +10,13 @@ class LightUtils:
     @staticmethod
     def get_camera_position():
         viewport_window = omni.kit.viewport_legacy.get_default_viewport_window()
+        if not viewport_window:
+            return None
 
         camera_path = viewport_window.get_active_camera()
+        if not camera_path:
+            return None
+
         camera_prim = omni.usd.get_context().get_stage().GetPrimAtPath(camera_path)
         # print(camera_prim.GetTypeName())
 

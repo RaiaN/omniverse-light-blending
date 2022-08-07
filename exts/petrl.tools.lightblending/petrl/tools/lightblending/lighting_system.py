@@ -56,6 +56,10 @@ class LightingSystem():
         self._tracked_lights = []
         self._light_models = []
 
+    def on_stage_changed(self):
+        self._tracked_lights = []
+        self._light_models = []
+
     def add_light(self, light):
         if not light.IsA(UsdLux.Light):
             print('Selected primitive is not a light: ', light)
@@ -105,7 +109,10 @@ class LightingSystem():
         return light in self._tracked_lights
 
     def _on_update(self, args):
-        camera_position = Gf.Vec3f(LightUtils.get_camera_position())
+        if len(self._light_models) > 0:
+            camera_position = Gf.Vec3f(LightUtils.get_camera_position())
+            if not camera_position:
+                return
 
         try:
             for model in self._light_models:
@@ -132,6 +139,9 @@ class LightingSystem():
         return omni.usd.get_context()
 
     def _on_kit_selection_changed(self):
+        if not self._viewport_scene:
+            return
+
         usd_context = self._usd_context
         if not usd_context:
             self._viewport_scene.set_model(None)
@@ -150,19 +160,29 @@ class LightingSystem():
         selected_prim_path = prim_paths[0]
 
         for _, model in self.get_all_lights_of_type(UsdLux.DistantLight):
-            if model.get_light_path() == selected_prim_path:
+            if not model:
+                continue
+
+            if model.get_light_path() == selected_prim_path and self._viewport_scene:
                 self._viewport_scene.set_model(model)
                 return
 
-        self._viewport_scene.set_model(None)
+        if self._viewport_scene:
+            self._viewport_scene.set_model(None)
 
     def _notice_changed(self, notice, stage):
         """Called by Tf.Notice. When USD data changes, we update light model"""
+
+        if not stage:
+            return
 
         for p in notice.GetChangedInfoOnlyPaths():
             prim_path = p.GetPrimPath().pathString
 
             for _, model in self.get_all_lights_of_type(UsdLux.DistantLight):
+                if not model:
+                    continue
+
                 if model.get_light_path() != prim_path:
                     continue
 

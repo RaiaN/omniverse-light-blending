@@ -39,4 +39,5 @@ class ViewportScene:
         self._visualizer = None
 
     def set_model(self, model):
-        self._visualizer.set_model(model)
+        if self._visualizer:
+            self._visualizer.set_model(model)
