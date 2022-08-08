@@ -1,7 +1,7 @@
 import omni.usd
 from pxr import UsdLux, Usd
 from omni.ui import scene as sc
-from .utils import LightUtils
+from ..utils import LightUtils
 
 __all__ = ["LightModel"]
 
@@ -58,7 +58,6 @@ class LightModel(sc.AbstractManipulatorModel):
     def set_radius(self, new_radius):
         # only called by distant light widget
         self._radius = new_radius
-        # self.mark_as_dirty()
 
     def _set_intensity(self, new_intensity):
         light = self.get_light()
@@ -70,3 +69,13 @@ class LightModel(sc.AbstractManipulatorModel):
 
     def update_light_intensity(self, camera_position):
         raise NotImplementedError("Implement this method for classes that inherit LightModel")
+
+    def on_changed(self, property_name):
+        pass
+
+    def has_visualizer(self):
+        # override if model has a visualizer
+        return False
+
+    def get_visualizer(self):
+        return None

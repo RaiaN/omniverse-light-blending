@@ -1,4 +1,5 @@
 from .light_model import LightModel
+from ..manipulator import DistantLightVisualizer
 
 __all__ = ["DistantLightModel"]
 
@@ -20,3 +21,21 @@ class DistantLightModel(LightModel):
             self._set_intensity(self.get_default_intensity())
         else:
             self._set_intensity(0)
+
+    def set_radius(self, new_radius):
+        # only called by distant light widget
+        self._radius = new_radius
+        self.mark_as_dirty()
+
+    def on_changed(self, property_name):
+        if property_name == "radius":
+            self.mark_as_dirty()
+        elif "translate" in property_name:
+            self.mark_as_dirty()
+
+    # below two methods always go in pair
+    def has_visualizer(self):
+        return True
+
+    def get_visualizer(self):
+        return DistantLightVisualizer(model=self)

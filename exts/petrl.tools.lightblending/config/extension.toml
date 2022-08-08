@@ -13,7 +13,7 @@ readme  = "docs/README.md"
 repository = ""
 
 # One of categories for UI.
-category = "Example"
+category = "Lights"
 
 # Keywords for the extension
 keywords = ["kit", "light blending", "light manipulation"]
@@ -27,3 +27,11 @@ keywords = ["kit", "light blending", "light manipulation"]
 # Main python module this extension provides, it will be publicly available as "import petrl.tools.lightblending".
 [[python.module]]
 name = "petrl.tools.lightblending"
+
+[[python.module]]
+name = "petrl.tools.lightblending.models"
+path = "."
+
+[[python.module]]
+name = "petrl.tools.lightblending.manipulator"
+path = "."

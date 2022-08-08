@@ -38,11 +38,13 @@ class LightBlendingContextMenu:
         if 'prim_list' in objects:
             for light in objects['prim_list']:
                 LightingSystem.get_instance().add_light(light)
+                break
 
     def remove_light(objects):
         if 'prim_list' in objects:
             for light in objects['prim_list']:
                 LightingSystem.get_instance().remove_light(light)
+                break
 
     def show_fn(objects: dict):
         return LightBlendingContextMenu.show_add_fn(objects) or LightBlendingContextMenu.show_remove_fn(objects)

@@ -1,7 +1,7 @@
 import omni.kit.app
 import omni.usd
-from pxr import Usd, UsdLux, Gf, Tf
-from .light_model_factory import LightModelFactory
+from pxr import Usd, Gf, Tf
+from .models import LightModelFactory
 from .utils import LightUtils
 
 __all__ = ["LightingSystem"]
@@ -62,10 +62,6 @@ class LightingSystem():
         self._light_models = []
 
     def add_light(self, light):
-        if not light.IsA(UsdLux.Light):
-            print('Selected primitive is not a light: ', light)
-            return
-
         if light not in self._tracked_lights:
             model = LightModelFactory.new_model(light)
             if not model:
@@ -77,15 +73,11 @@ class LightingSystem():
             self._tracked_lights.append(light)
             self._light_models.append(model)
 
-            self._on_kit_selection_changed()
+            self._update_viewport_scene(model)
         else:
             print("Light is already being tracked!")
 
     def remove_light(self, light):
-        if not light.IsA(UsdLux.Light):
-            print('Selected primitive is not a light: ', light)
-            return
-
         if light in self._tracked_lights:
             print("Stopped tracking light: ", light)
             index = self._tracked_lights.index(light)
@@ -93,16 +85,7 @@ class LightingSystem():
             model = self._light_models.pop(index)
             model.on_shutdown()
 
-            self._on_kit_selection_changed()
-
-    def get_all_lights_of_type(self, light_type: UsdLux.Light):
-        result = []
-
-        for light, model in zip(self._tracked_lights, self._light_models):
-            if light.IsA(light_type):
-                result.append((light, model))
-
-        return result
+            self._update_viewport_scene(None)
 
     def has_light(self, light):
         return light in self._tracked_lights
@@ -130,7 +113,15 @@ class LightingSystem():
     def _on_stage_event(self, event):
         """Called by stage_event_stream"""
         if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
-            self._on_kit_selection_changed()
+            model = self._on_kit_selection_changed()
+            self._update_viewport_scene(model)
+
+    def _update_viewport_scene(self, model):
+        if self._viewport_scene:
+            if model and model.has_visualizer():
+                self._viewport_scene.set_model(model)
+            else:
+                self._viewport_scene.set_model(None)
 
     @property
     def _usd_context(self) -> Usd.Stage:
@@ -139,35 +130,27 @@ class LightingSystem():
 
     def _on_kit_selection_changed(self):
         if not self._viewport_scene:
-            return
+            return None
 
         usd_context = self._usd_context
         if not usd_context:
-            self._viewport_scene.set_model(None)
-            return
+            return None
 
         stage = usd_context.get_stage()
         if not stage:
-            self._viewport_scene.set_model(None)
-            return
+            return None
 
         prim_paths = usd_context.get_selection().get_selected_prim_paths() if usd_context else None
         if not prim_paths:
-            self._viewport_scene.set_model(None)
-            return
+            return None
 
         selected_prim_path = prim_paths[0]
 
-        for _, model in self.get_all_lights_of_type(UsdLux.DistantLight):
-            if not model:
-                continue
+        for model in self._light_models:
+            if model and model.get_light_path() == selected_prim_path:
+                return model
 
-            if model.get_light_path() == selected_prim_path and self._viewport_scene:
-                self._viewport_scene.set_model(model)
-                return
-
-        if self._viewport_scene:
-            self._viewport_scene.set_model(None)
+        return None
 
     def _notice_changed(self, notice, stage):
         """Called by Tf.Notice. When USD data changes, we update light model"""
@@ -178,14 +161,6 @@ class LightingSystem():
         for p in notice.GetChangedInfoOnlyPaths():
             prim_path = p.GetPrimPath().pathString
 
-            for _, model in self.get_all_lights_of_type(UsdLux.DistantLight):
-                if not model:
-                    continue
-
-                if model.get_light_path() != prim_path:
-                    continue
-
-                if p.name == "radius":
-                    model.mark_as_dirty()
-                elif "translate" in p.name:
-                    model.mark_as_dirty()
+            for model in self._light_models:
+                if model and model.get_light_path() == prim_path:
+                    model.on_changed(p.name)
