@@ -11,7 +11,6 @@ class LightModel(sc.AbstractManipulatorModel):
         super().__init__()
 
         self._on_model_dirty_event = None
-        self._stage_listener = None
 
         usd_light = UsdLux.Light(light)
 
@@ -23,6 +22,7 @@ class LightModel(sc.AbstractManipulatorModel):
         print("Light intensity (current): ", self._intensity)
 
     def on_shutdown(self):
+        self._on_model_dirty_event = None
         self._set_intensity(self._default_intensity)
 
     def set_on_model_dirty_event(self, event):
@@ -58,7 +58,7 @@ class LightModel(sc.AbstractManipulatorModel):
     def set_radius(self, new_radius):
         # only called by distant light widget
         self._radius = new_radius
-        self.mark_as_dirty()
+        # self.mark_as_dirty()
 
     def _set_intensity(self, new_intensity):
         light = self.get_light()

@@ -26,6 +26,8 @@ class ViewportScene:
         self.destroy()
 
     def destroy(self):
+        self._visualizer = None
+
         if self._scene_view:
             # Empty the SceneView of any elements it may have
             self._scene_view.scene.clear()
@@ -36,7 +38,6 @@ class ViewportScene:
         # Remove our references to these objects
         self._viewport_window = None
         self._scene_view = None
-        self._visualizer = None
 
     def set_model(self, model):
         if self._visualizer:

@@ -1,9 +1,7 @@
 import omni.kit.app
 import omni.usd
 from pxr import Usd, UsdLux, Gf, Tf
-from .distant_light_model import DistantLightModel
-from .sphere_light_model import SphereLightModel
-from .disk_light_model import DiskLightModel
+from .light_model_factory import LightModelFactory
 from .utils import LightUtils
 
 __all__ = ["LightingSystem"]
@@ -27,8 +25,8 @@ class LightingSystem():
         )
 
         # Listen for object selection changes
-        self._events = self._usd_context.get_stage_event_stream()
-        self._stage_event_sub = self._events.create_subscription_to_pop(
+        events = self._usd_context.get_stage_event_stream()
+        self._stage_event_sub = events.create_subscription_to_pop(
             self._on_stage_event, name="Light Manipulator Selection Change"
         )
 
@@ -39,7 +37,8 @@ class LightingSystem():
     def shutdown(self):
         for model in self._light_models:
             print("Cleaning up light model: ", model)
-            model.on_shutdown()
+            if model:
+                model.on_shutdown()
 
         if hasattr(self, "_update_end_sub") and self._update_end_sub is not None:
             print("Unsubscribe from update event stream")
@@ -56,6 +55,7 @@ class LightingSystem():
 
         self._tracked_lights = []
         self._light_models = []
+        self._viewport_scene = None
 
     def on_stage_changed(self):
         self._tracked_lights = []
@@ -67,14 +67,7 @@ class LightingSystem():
             return
 
         if light not in self._tracked_lights:
-            model = None
-            if light.IsA(UsdLux.DistantLight):
-                model = DistantLightModel(light)
-            elif light.IsA(UsdLux.SphereLight):
-                model = SphereLightModel(light)
-            elif light.IsA(UsdLux.DiskLight):
-                model = DiskLightModel(light)
-
+            model = LightModelFactory.new_model(light)
             if not model:
                 print("Light is not supported: ", light)
                 return
@@ -94,10 +87,13 @@ class LightingSystem():
             return
 
         if light in self._tracked_lights:
+            print("Stopped tracking light: ", light)
             index = self._tracked_lights.index(light)
             del self._tracked_lights[index]
             model = self._light_models.pop(index)
             model.on_shutdown()
+
+            self._on_kit_selection_changed()
 
     def get_all_lights_of_type(self, light_type: UsdLux.Light):
         result = []

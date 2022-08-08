@@ -70,9 +70,14 @@ class DistantLightVisualizer(sc.Manipulator):
 
         self._enabled = True
         self._radius_model = None
+        self._radius_subscription = None
 
     def __del__(self):
-        self.model = None
+        if self.model:
+            self.model.set_on_model_dirty_event(None)
+            self.model = None
+        self._radius_subscription = None
+        self._radius_model = None
 
     def set_model(self, model):
         if self.model:
@@ -142,6 +147,7 @@ class DistantLightVisualizer(sc.Manipulator):
             def update_radius(prim_name, value):
                 print(f"Changing radius of {prim_name} to: {value}")
                 self.model.set_radius(value)
+                self.invalidate()
 
             if self._radius_model:
                 self._radius_subscription = None
