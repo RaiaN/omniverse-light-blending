@@ -28,4 +28,4 @@ class SphereLightModel(LightModel):
         # print(new_intensity)
         # print("New intensity: ", new_intensity)
 
-        self.set_intensity(new_intensity)
+        self._set_intensity(new_intensity)
