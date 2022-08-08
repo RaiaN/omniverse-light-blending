@@ -111,6 +111,7 @@ class LightingSystem():
         return LightingSystem.instance
 
     def _on_stage_event(self, event):
+        # print("event type: ", event.type)
         """Called by stage_event_stream"""
         if event.type == int(omni.usd.StageEventType.SELECTION_CHANGED):
             model = self._on_kit_selection_changed()
@@ -157,6 +158,21 @@ class LightingSystem():
 
         if not stage:
             return
+
+        indices_to_remove = []
+
+        for p in notice.GetResyncedPaths():
+            print("Resynced path: ", p)
+
+            prim_path = p.GetPrimPath().pathString
+
+            for index, model in enumerate(self._light_models):
+                if model and model.get_light_path() == prim_path:
+                    indices_to_remove.append(index)
+
+        for index in indices_to_remove[::-1]:
+            model = self._light_models.pop(index)
+            del self._tracked_lights[index]
 
         for p in notice.GetChangedInfoOnlyPaths():
             prim_path = p.GetPrimPath().pathString

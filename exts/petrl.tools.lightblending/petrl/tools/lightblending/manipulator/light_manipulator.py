@@ -41,7 +41,7 @@ class LightManipulator(sc.Manipulator):
         if not model or not self._enabled:
             return
 
-        print("On build!")
+        # print("On build!")
 
         if self._visualizer:
             self._visualizer.visualize()

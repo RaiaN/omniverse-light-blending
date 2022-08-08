@@ -77,7 +77,7 @@ class DistantLightVisualizer(LightVisualizer):
         self._radius_model = None
 
     def visualize(self):
-        print("Visualize distant light")
+        # print("Visualize distant light")
 
         radius = self.model.get_radius()
         position = self.model.get_position()
