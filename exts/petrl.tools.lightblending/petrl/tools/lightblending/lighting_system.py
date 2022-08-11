@@ -159,6 +159,8 @@ class LightingSystem():
         if not stage:
             return
 
+        changed_info_only_prim_paths = [p.GetPrimPath().pathString for p in notice.GetChangedInfoOnlyPaths()]
+
         indices_to_remove = []
 
         for p in notice.GetResyncedPaths():
@@ -167,7 +169,7 @@ class LightingSystem():
             prim_path = p.GetPrimPath().pathString
 
             for index, model in enumerate(self._light_models):
-                if model and model.get_light_path() == prim_path:
+                if model and model.get_light_path() == prim_path and prim_path not in changed_info_only_prim_paths:
                     indices_to_remove.append(index)
 
         for index in indices_to_remove[::-1]:
