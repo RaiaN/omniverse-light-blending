@@ -115,9 +115,9 @@ class SphereLightVisualizer(LightVisualizer):
             ui.Spacer(height=20)
             with ui.HStack():
                 ui.Spacer(width=10)
-                ui.Label("Radius", height=0, width=0)
+                ui.Label("Radius", height=0, width=0, style={"font_size": 20.0})
                 ui.Spacer(width=5)
-                ui.IntSlider(self._radius_model, min=1, max=10000, height=5)
+                ui.IntSlider(self._radius_model, min=1, max=10000, height=0, style={"font_size": 20.0})
             ui.Spacer()
 
             # Update the slider
