@@ -3,7 +3,7 @@ import time
 
 __all__ = ["DiskLightModel"]
 
-CHANGE_LIGHT_INTENSITY_FREQUENCY_SECONDS = 1.5
+CHANGE_LIGHT_INTENSITY_FREQUENCY_SECONDS = 1.25
 
 
 class DiskLightModel(LightModel):
@@ -21,8 +21,11 @@ class DiskLightModel(LightModel):
         if time_now - self._time_prev >= CHANGE_LIGHT_INTENSITY_FREQUENCY_SECONDS:
             self._time_prev = time_now
 
-            if self._intensity == 0:
+            light_position = self.get_position()
+            distance_to_camera = (camera_position - light_position).GetLength()
+            light_is_active = distance_to_camera < self.get_radius()
+
+            if self._intensity == 0 and light_is_active:
                 self._set_intensity(self.get_default_intensity())
             else:
                 self._set_intensity(0)
-

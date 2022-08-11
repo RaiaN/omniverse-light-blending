@@ -1,5 +1,5 @@
 from .light_model import LightModel
-from ..manipulator import DistantLightVisualizer
+from ..manipulator import SphereLightVisualizer
 
 __all__ = ["DistantLightModel"]
 
@@ -11,7 +11,7 @@ class DistantLightModel(LightModel):
         super().__init__(light)
 
         self._radius = DEFAULT_DISTANT_LIGHT_RADIUS
-        print("Light radius: ", self._radius)
+        print("Distant Light radius: ", self._radius)
 
     def update_light_intensity(self, camera_position):
         light_position = self.get_position()
@@ -38,4 +38,4 @@ class DistantLightModel(LightModel):
         return True
 
     def get_visualizer(self):
-        return DistantLightVisualizer(model=self)
+        return SphereLightVisualizer(model=self)

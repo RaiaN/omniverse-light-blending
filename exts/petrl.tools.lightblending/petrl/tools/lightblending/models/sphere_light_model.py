@@ -1,24 +1,25 @@
-from pxr import UsdLux, Usd
 from .light_model import LightModel
+from ..manipulator import SphereLightVisualizer
 
 __all__ = ["SphereLightModel"]
 
-DEFAULT_DISTANT_LIGHT_RADIUS = 500
+DEFAULT_SPHERE_LIGHT_RADIUS = 400
+CUTOFF_DISTANCE = 200
 
 
 class SphereLightModel(LightModel):
     def __init__(self, light):
         super().__init__(light)
 
-        usd_light = UsdLux.Light(light)
-        sphere_light = UsdLux.SphereLight(usd_light)
-        self._radius = sphere_light.GetRadiusAttr().Get(Usd.TimeCode())
+        self._radius = DEFAULT_SPHERE_LIGHT_RADIUS
 
-        print("Light radius: ", self._radius)
+        print("Sphere Light radius: ", self._radius)
 
     def update_light_intensity(self, camera_position):
         light_position = self.get_position()
         distance_to_camera = (camera_position - light_position).GetLength()
+        distance_to_camera = max(distance_to_camera - CUTOFF_DISTANCE, 0)
+
         light_weight = float(distance_to_camera / (self.get_radius() + 0.0001))
         # print("Light weight: ", light_weight)
 
@@ -29,3 +30,15 @@ class SphereLightModel(LightModel):
         # print("New intensity: ", new_intensity)
 
         self._set_intensity(new_intensity)
+
+    def set_radius(self, new_radius):
+        # only called by sphere light widget
+        self._radius = new_radius
+        self.mark_as_dirty()
+
+    def has_visualizer(self):
+        # override if model has a visualizer
+        return True
+
+    def get_visualizer(self):
+        return SphereLightVisualizer(model=self)

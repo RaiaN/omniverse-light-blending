@@ -3,7 +3,7 @@ from omni.ui import scene as sc
 from omni.ui import color as cl
 from .light_visualizer import LightVisualizer
 
-__all__ = ["DistantLightVisualizer"]
+__all__ = ["SphereLightVisualizer"]
 
 
 class _ViewportLegacyDisableSelection:
@@ -65,7 +65,7 @@ class _DragGesture(sc.DragGesture):
         self.__disable_selection = None
 
 
-class DistantLightVisualizer(LightVisualizer):
+class SphereLightVisualizer(LightVisualizer):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -84,9 +84,9 @@ class DistantLightVisualizer(LightVisualizer):
 
         with sc.Transform(transform=sc.Matrix44.get_translation_matrix(*position)):
             with sc.Transform(look_at=sc.Transform.LookAt.CAMERA):
-                sc.Arc(radius, axis=2, color=cl.yellow, wireframe=True)
-                sc.Arc(radius, axis=1, color=cl.yellow, wireframe=True)
-                sc.Arc(radius, axis=0, color=cl.yellow, wireframe=True)
+                sc.Arc(radius, axis=2, color=self.color, wireframe=True)
+                sc.Arc(radius, axis=1, color=self.color, wireframe=True)
+                sc.Arc(radius, axis=0, color=self.color, wireframe=True)
 
         with sc.Transform(transform=sc.Matrix44.get_translation_matrix(*position)):
             with sc.Transform(look_at=sc.Transform.LookAt.CAMERA):
