@@ -4,4 +4,4 @@ This extension allows to smoothly interpolate light parameters (i.e. intensity) 
 
 Supported light types: Sphere Light, Distant Light, Disk Light.
 
-Disk Light is turned into a blinking light to showcase capabilities of the plugin and how it is to add more light types.
+Disk Light is turned into a blinking light to showcase capabilities of the plugin and how easy it is to add more light types.
