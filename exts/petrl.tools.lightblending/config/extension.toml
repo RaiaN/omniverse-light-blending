@@ -4,7 +4,7 @@ version = "1.0.0"
 
 # The title and description fields are primarily for displaying extension info in UI
 title = "Light Blending Extension"
-description="This extension allows to smoothly interpolate/blend between two lights in a scene."
+description="This extension allows to smoothly interpolate/blend intensity between two lights in a scene taking into account camera position"
 
 # Path (relative to the root) or content of readme markdown file for UI.
 readme  = "docs/README.md"
